@@ -1,0 +1,6 @@
+package ${package};
+
+public final class BuildConfig {
+	public final static boolean DEBUG = true;
+}
+

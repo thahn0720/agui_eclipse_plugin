@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            name="Agui "
+            id="thahn.java.agui.ide.eclipse.wizard">
+      </category>
+      <wizard
+            name="New Agui Project"
+            icon="icons/ic_launcher.png"
+            category="thahn.java.agui.ide.eclipse.wizard"
+            class="thahn.java.agui.ide.eclipse.wizard.AguiProjectWizard"
+            id="thahn.java.agui.ide.eclipse.wizard.AguiProjectWizard"
+            project="true" >
+            <description>
+               Create an Agui Application Project
+            </description>
+      </wizard>
+   </extension>
+   <extension
+         id="ResourceBuilder"
+         name="Resource Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="thahn.java.agui.ide.eclipse.build.builder.ResourceBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="AguiNature"
+         name="Agui Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="thahn.java.agui.ide.eclipse.project.AguiNature">
+         </run>
+      </runtime>
+      <builder
+            id="thahn.java.agui.ide.eclipse.wizard.ResourceBuilder">
+      </builder>
+   </extension>
+   <extension
+         id="xmlProblem"
+         name="XML Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+	<extension
+         point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+            delegate="thahn.java.agui.ide.eclipse.launch.AguiLaunchDelegate"
+            delegateDescription="Launcher for Agui Application "
+            delegateName="Agui Launcher"
+            id="thahn.java.agui.ide.eclipse.launch.AguiLaunchDelegate"
+            modes="run, debug"
+            name="Agui Launcher"
+            public="true">
+      </launchConfigurationType>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="thahn.java.agui.ide.eclipse.launch.AguiLaunchConfigurationTabGroups"
+            id="NewLauncher.launchConfigurationTabGroup1"
+            type="thahn.java.agui.ide.eclipse.launch.AguiLaunchDelegate">
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    <launchConfigurationTypeImage
+        icon="icons/sample.gif"
+        configTypeID="NewLauncher.launchConfigurationType1"
+        id="org.eclipse.jdt.debug.ui.launchConfigurationTypeImage.javaApplet">
+    </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+         
+        <shortcut
+            class="thahn.java.agui.ide.eclipse.launch.AguiLaunchShortcut"
+            description="Agui Application Des"
+            helpContextId="org.eclipse.jdt.debug.ui.shortcut_local_java_application"
+            icon="icons/sample.gif"
+            id="thahn.java.agui.ide.eclipse.launch.AguiLaunchShortcut"
+            label="Agui Application"
+            modes="run, debug">
+         <contextualLaunch>
+           <enablement>
+             <with variable="selection">
+               <count value="1"/>
+                <iterate>
+                 <and>
+                  <adapt type="org.eclipse.jdt.core.IJavaElement">
+                  	<test property="org.eclipse.jdt.core.isInJavaProject"/>
+                  </adapt>
+               	  <or>
+               	    <test property="org.eclipse.jdt.launching.hasMain"/>
+               	    <test property="org.eclipse.jdt.launching.isContainer"/>
+               	    <test property="org.eclipse.jdt.launching.isPackageFragment"/>
+               	    <test property="org.eclipse.jdt.launching.isPackageFragmentRoot"/>
+               	  </or>
+                 </and>
+                </iterate>
+               </with>
+           </enablement>
+  		 </contextualLaunch>
+         <configurationType
+               id="thahn.java.agui.ide.eclipse.launch.AguiLaunchDelegate">
+         </configurationType>
+         <description
+               description="Run Run"
+               mode="run">
+         </description>
+         <description
+               description="Run Debug"
+               mode="debug">
+         </description>
+      </shortcut>   
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="thahn.java.agui.ide.eclipse.preferences.AguiPreferencePage"
+            id="thahn.java.agui.ide.eclipse.preferences.AguiPreferencePage"
+            name="Agui">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="thahn.java.agui.ide.eclipse.preferences.AguiPreferenceInitializer">
+      </initializer>
+   </extension>
+	
+	   <extension point="org.eclipse.ui.popupMenus">
+        <objectContribution
+            id="thahn.java.agui.ide.eclipse.contribution"
+            nameFilter="*"
+            objectClass="org.eclipse.core.resources.IProject"
+            adaptable="true">
+            <menu
+                id="thahn.java.agui.ide.eclipse.AguiTools"
+                label="Agui Tools"
+                path="additions">
+                <separator name="group1" />
+                <separator name="group2" />
+                <separator name="group3" />
+                <separator name="group4" />
+            </menu>
+            
+            <filter
+                name="projectNature"
+                value="com.android.ide.eclipse.adt.AndroidNature">
+            </filter>
+
+            <filter
+                name="projectNature"
+                value="org.eclipse.jdt.core.javanature">
+            </filter>
+
+            <action
+                class="thahn.java.agui.ide.eclipse.menu.ConvertToAguiAction"
+                enablesFor="1"
+                icon="icons/convertToAGUI.gif"
+                id="thahn.java.agui.ide.eclipse.menu.ConvertToAguiAction1"
+                label="Convert Android To Agui"
+                menubarPath="thahn.java.agui.ide.eclipse.AguiTools/group1"
+                tooltip="Convert Android To Agui">
+            </action>
+            <action
+                class="thahn.java.agui.ide.eclipse.menu.ConvertToAndroidAction"
+                enablesFor="1"
+                icon="icons/convertToAndroid.gif"
+                id="thahn.java.agui.ide.eclipse.menu.ConvertToAndroidAction1"
+                label="Convert Agui To Android"
+                menubarPath="thahn.java.agui.ide.eclipse.AguiTools/group1"
+                tooltip="Convert Agui To Android">
+            </action>
+        </objectContribution>
+    </extension>
+    <extension
+          point="org.eclipse.ui.startup">
+       <startup
+             class="thahn.java.agui.ide.eclipse.project.AguiStartup">
+       </startup>
+    </extension>
+</plugin>

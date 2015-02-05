@@ -1,0 +1,12 @@
+package ${package};
+
+import thahn.java.agui.app.Activity;
+import thahn.java.agui.app.Bundle;
+
+public class ${mainActivityName} extends Activity {
+	
+	@Override
+	public void onCreate(Bundle bundle) {
+		super.onCreate(bundle);
+	}
+}
