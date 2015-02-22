@@ -1,7 +1,6 @@
 package thahn.java.agui.ide.eclipse.wizard;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.eclipse.core.runtime.Platform;
@@ -105,17 +104,7 @@ public class AguiPlugin extends AbstractUIPlugin {
                 }
 
                 String customLabel = null;
-//                switch(solution) {
-//                case OPEN_ANDROID_PREFS:
-                    customLabel = "Open Preferences";
-//                    break;
-//                case OPEN_P2_UPDATE:
-//                    customLabel = "Check for Updates";
-//                    break;
-//                case OPEN_SDK_MANAGER:
-//                    customLabel = "Open SDK Manager";
-//                    break;
-//                }
+                customLabel = "Open Preferences";
 
                 String btnLabels[] = new String[customLabel == null ? 1 : 2];
                 btnLabels[0] = customLabel;
@@ -156,18 +145,6 @@ public class AguiPlugin extends AbstractUIPlugin {
      * @return the display
      */
     public static Display getDisplay() {
-//        synchronized (AguiPlugin.class) {
-//            if (sPlugin != null) {
-//                IWorkbench bench = sPlugin.getWorkbench();
-//                if (bench != null) {
-//                    Display display = bench.getDisplay();
-//                    if (display != null) {
-//                        return display;
-//                    }
-//                }
-//            }
-//        }
-
         Display display = Display.getCurrent();
         if (display != null) {
             return display;
@@ -211,31 +188,8 @@ public class AguiPlugin extends AbstractUIPlugin {
         dialog.open();
     }
 	
-	public String getSdkLocation() {
-		return getPreferenceStore().getString(AguiPreferenceConstants.P_SDK_LOCATION);
-	}
-	
-	public String getSdkJarLocation() {
-		String ret = getPreferenceStore().getString(AguiPreferenceConstants.P_SDK_LOCATION);
-		if(ret != null || !ret.trim().equals("")) {
-			ret += "/platforms/agui-1/agui_sdk.jar";
-		}
-		return ret;
-	}
-	
-	public String getToolsLibLocation() {
-		String ret = getPreferenceStore().getString(AguiPreferenceConstants.P_SDK_LOCATION);
-		if(ret != null || !ret.trim().equals("")) {
-			ret += "/tools/lib/";
-		}
-		return ret;
-	}
-	
-	public String getLocationInSdk(String path) {
-		String ret = getPreferenceStore().getString(AguiPreferenceConstants.P_SDK_LOCATION);
-		if(ret != null || !ret.trim().equals("")) {
-			ret += path;
-		}
-		return ret;
+	public static void displayError(String title, String message) {
+		MessageDialog dialog = new MessageDialog(getShell(), title, null,
+			    message, MessageDialog.ERROR, new String[] { "Ok", "Cancel" }, 0);
 	}
 }

@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.PlatformUI;
 
+import thahn.java.agui.ide.eclipse.preferences.AguiPrefs;
+
 /**
  * The "New" wizard page allows setting the container for the new file as well
  * as the file name. The page will only accept file name without the extension
@@ -52,7 +54,7 @@ public class AguiProjectWizardPage extends WizardPage {
 	 */
 	public void createControl(Composite parent) {
 		//
-		if(AguiPlugin.getDefault().getSdkLocation() == null || AguiPlugin.getDefault().getSdkLocation().trim().equals("")) {
+		if (AguiPrefs.getInstance().getSdkLocation() == null || AguiPrefs.getInstance().getSdkLocation().trim().equals("")) {
 			MessageBoxUtils.showMessageBox("Agui", "Agui SDK Location should set");
 			AguiPlugin.getDefault().workbenchStarted();
 		} else {
@@ -147,19 +149,19 @@ public class AguiProjectWizardPage extends WizardPage {
 		String packageName = mPackageNameText.getText();
 		String activityName = mActivityNameText.getText();
 		
-		if(TextUtils.isEmpty(applicationName)) {
+		if (TextUtils.isNullorEmpty(applicationName)) {
 			updateStatus("Application Name must be specified");
 			return;
 		}
-		if(TextUtils.isEmpty(projectName)) {
+		if (TextUtils.isNullorEmpty(projectName)) {
 			updateStatus("Project Name must be specified");
 			return;
 		}
-		if(TextUtils.isEmpty(packageName)) {
+		if (TextUtils.isNullorEmpty(packageName)) {
 			updateStatus("Package Name must be specified");
 			return;
 		}
-		if(TextUtils.isEmpty(activityName)) {
+		if (TextUtils.isNullorEmpty(activityName)) {
 			updateStatus("Activity Name must be specified");
 			return;
 		}

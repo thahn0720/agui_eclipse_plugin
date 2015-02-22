@@ -38,6 +38,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
 
 import thahn.java.agui.ide.eclipse.preferences.AguiPreferenceConstants;
+import thahn.java.agui.ide.eclipse.preferences.AguiPrefs;
 import thahn.java.agui.ide.eclipse.project.AguiNature;
 import thahn.java.agui.ide.eclipse.wizard.template.ResourceIndicator;
 
@@ -91,7 +92,7 @@ public class AguiProjectMaker {
 			//
 			IJavaProject javaProject = JavaCore.create(proj);
 			// ref agui lib
-			String sdkLibLocation = AguiPlugin.getDefault().getSdkJarLocation();
+			String sdkLibLocation = AguiPrefs.getInstance().getSdkJarLocation();
             IClasspathEntry aguiLib = JavaCore.newLibraryEntry(new Path(sdkLibLocation), null, null);
 			// ref java lib
 			HashSet<IClasspathEntry> entries = new HashSet<IClasspathEntry>();

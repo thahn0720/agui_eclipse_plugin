@@ -8,14 +8,14 @@ public class TextUtils {
 	 *            the string to be examined
 	 * @return true if str is null or zero length
 	 */
-	public static boolean isEmpty(CharSequence str) {
+	public static boolean isNullorEmpty(CharSequence str) {
 		if (str == null || str.length() == 0)
 			return true;
 		else
 			return false;
 	}
 
-	public static boolean isEmpty(String str) {
+	public static boolean isNullorEmpty(String str) {
 		if (str == null || str.length() == 0 || str.trim().equals(""))
 			return true;
 		else

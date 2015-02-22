@@ -77,7 +77,7 @@
    </extension>
    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
     <launchConfigurationTypeImage
-        icon="icons/sample.gif"
+        icon="icons/ic_launcher_16x16.png"
         configTypeID="NewLauncher.launchConfigurationType1"
         id="org.eclipse.jdt.debug.ui.launchConfigurationTypeImage.javaApplet">
     </launchConfigurationTypeImage>
@@ -89,7 +89,7 @@
             class="thahn.java.agui.ide.eclipse.launch.AguiLaunchShortcut"
             description="Agui Application Des"
             helpContextId="org.eclipse.jdt.debug.ui.shortcut_local_java_application"
-            icon="icons/sample.gif"
+            icon="icons/ic_launcher_16x16.png"
             id="thahn.java.agui.ide.eclipse.launch.AguiLaunchShortcut"
             label="Agui Application"
             modes="run, debug">
@@ -137,7 +137,7 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="thahn.java.agui.ide.eclipse.preferences.AguiPreferenceInitializer">
+            class="thahn.java.agui.ide.eclipse.preferences.AguiPrefs">
       </initializer>
    </extension>
 	

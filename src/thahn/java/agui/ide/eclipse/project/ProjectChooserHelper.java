@@ -140,7 +140,7 @@ public class ProjectChooserHelper {
         IJavaModel javaModel = JavaCore.create(workspaceRoot);
 
         // set the elements in the dialog. These are opened android projects.
-        dialog.setElements(getAndroidProjects(javaModel));
+        dialog.setElements(getAguiProjects(javaModel));
 
         // look for the project matching the given project name
         IJavaProject javaProject = null;
@@ -169,7 +169,7 @@ public class ProjectChooserHelper {
      *
      * @param javaModel the java model. Can be null.
      */
-    public IJavaProject[] getAndroidProjects(IJavaModel javaModel) {
+    public IJavaProject[] getAguiProjects(IJavaModel javaModel) {
         // recompute only if we don't have the projects already or the filter is dynamic
         // and prevent usage of a cache.
         if (mAguiProjects == null || (mFilter != null && mFilter.useCache() == false)) {
@@ -189,9 +189,9 @@ public class ProjectChooserHelper {
      * @param projectName the name of the project to find
      * @return the {@link IProject} for the Android project. <code>null</code> if not found.
      */
-    public IProject getAndroidProject(String projectName) {
+    public IProject getAguiProject(String projectName) {
         IProject iproject = null;
-        IJavaProject[] javaProjects = getAndroidProjects(null);
+        IJavaProject[] javaProjects = getAguiProjects(null);
         if (javaProjects != null) {
             for (IJavaProject javaProject : javaProjects) {
                 if (javaProject.getElementName().equals(projectName)) {
@@ -226,7 +226,7 @@ public class ProjectChooserHelper {
             super(parent, SWT.BORDER | SWT.FLAT | SWT.READ_ONLY);
             mProject = initialProject;
 
-            mAvailableProjects = helper.getAndroidProjects(null);
+            mAvailableProjects = helper.getAguiProjects(null);
             String[] items = new String[mAvailableProjects.length + 1];
             items[0] = "--- Choose Project ---";
 

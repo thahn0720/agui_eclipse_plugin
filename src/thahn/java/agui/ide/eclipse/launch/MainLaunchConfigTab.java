@@ -27,12 +27,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
-import thahn.java.agui.Log;
 import thahn.java.agui.app.Activity;
 import thahn.java.agui.ide.eclipse.project.IconFactory;
 import thahn.java.agui.ide.eclipse.project.ProjectChooserHelper;
 import thahn.java.agui.ide.eclipse.project.ProjectChooserHelper.IProjectChooserFilter;
 import thahn.java.agui.ide.eclipse.project.ProjectChooserHelper.NonLibraryProjectOnlyFilter;
+import thahn.java.agui.utils.Log;
 
 public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
 	public static final String TAG = "MainLaunchConfigTab"; 
@@ -185,7 +185,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
 
    @Override
    public String getName() {
-       return "Android";
+       return "Agui";
    }
 
    @Override
@@ -311,7 +311,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
        }
        mProjText.setText(projectName);
 
-       IProject proj = mProjectChooserHelper.getAndroidProject(projectName);
+       IProject proj = mProjectChooserHelper.getAguiProject(projectName);
        loadActivities(proj);
 
        // load the launch action.
@@ -444,7 +444,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
            } else if (text.matches("[a-zA-Z0-9_ \\.-]+") == false) {
                setErrorMessage("Project name contains unsupported characters!");
            } else {
-               IJavaProject[] projects = mProjectChooserHelper.getAndroidProjects(null);
+               IJavaProject[] projects = mProjectChooserHelper.getAguiProjects(null);
                IProject found = null;
                for (IJavaProject javaProject : projects) {
                    if (javaProject.getProject().getName().equals(text)) {
@@ -457,7 +457,7 @@ public class MainLaunchConfigTab extends AbstractLaunchConfigurationTab {
                if (found != null) {
                    setErrorMessage(null);
                } else {
-                   setErrorMessage(String.format("There is no android project named '%1$s'",
+                   setErrorMessage(String.format("There is no agui project named '%1$s'",
                            text));
                }
 

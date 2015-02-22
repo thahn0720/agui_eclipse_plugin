@@ -16,11 +16,11 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
 
-import thahn.java.agui.Log;
 import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.project.AguiProjectInfo;
 import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
 import thahn.java.agui.ide.eclipse.wizard.ProjectHelper;
+import thahn.java.agui.utils.Log;
 
 public class AguiLaunchController {
 	
@@ -34,15 +34,11 @@ public class AguiLaunchController {
     public static ILaunchConfiguration getLaunchConfig(IProject project, String launchTypeId) {
         // get the launch manager
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-
         // now get the config type for our particular android type.
         ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchTypeId);
-
         String name = project.getName();
-
         // search for an existing launch configuration
         ILaunchConfiguration config = findConfig(manager, configType, name);
-
         // test if we found one or not
         if (config == null) {
             // Didn't find a matching config, so we make one.
@@ -51,14 +47,11 @@ public class AguiLaunchController {
 
             try {
                 // make the working copy object
-                wc = configType.newInstance(null,
-                        manager.generateLaunchConfigurationName(name));
-
+                wc = configType.newInstance(null, manager.generateLaunchConfigurationName(name));
                 // set the value
                 wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, name);
-                //
                 wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, AguiConstants.SDK_MAIN_CLASS_NAME);
-                //
+                
                 StringBuilder argBuilder = new StringBuilder();//"E:\\Workspace\\runtime-EclipseApplication\\s7").append(" ").append("s7.s7");
                 IProject tempProject = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
 				if(BaseProjectHelper.isAguiProject(tempProject)) {
@@ -66,17 +59,13 @@ public class AguiLaunchController {
 					argBuilder.append(info.projectPath).append(" ").append(info.packageName).append(" ").append(info.mainActivityName);
 				}
     			wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, argBuilder.toString()); 
-                //
 //    			IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY,
 //				IJavaDebugHelpContextIds.WORKING_DIRECTORY_BLOCK
     			wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, "${workspace_loc:" + project.getFullPath().makeRelative().toOSString() + "}");
-
                 // map the config and the project
                 wc.setMappedResources(getResourcesToMap(project));
-
                 // save the working copy to get the launch config object which we return.
                 return wc.doSave();
-
             } catch (CoreException e) {
                 String msg = String.format(
                         "Failed to create a Launch config for project '%1$s': %2$s",
@@ -122,8 +111,8 @@ public class AguiLaunchController {
             ILaunchConfiguration[] configs = manager.getLaunchConfigurations(type);
 
             for (ILaunchConfiguration config : configs) {
-                if (config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME,
-                        "").equals(projectName)) {  //$NON-NLS-1$
+                if (config.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "")
+                		.equals(projectName)) {  //$NON-NLS-1$
                     return config;
                 }
             }

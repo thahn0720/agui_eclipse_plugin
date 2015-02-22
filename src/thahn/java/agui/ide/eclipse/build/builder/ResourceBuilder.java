@@ -24,16 +24,23 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import thahn.java.agui.Global;
+import thahn.java.agui.ide.eclipse.preferences.AguiPrefs;
 import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.project.AguiProjectInfo;
 import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
+import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
 import thahn.java.agui.res.RBuilder;
+import thahn.java.agui.res.RMaker;
+import thahn.java.agui.res.ResourcesManager;
+import thahn.java.agui.utils.MyUtils;
 
 public class ResourceBuilder extends IncrementalProjectBuilder {
 
 	public static final String 										TAG 	= "ResourceBuilder";
 	
 	class SampleDeltaVisitor implements IResourceDeltaVisitor {
+		
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -176,9 +183,16 @@ public class ResourceBuilder extends IncrementalProjectBuilder {
 		final IProject project = delta.getResource().getProject();
 		if(BaseProjectHelper.isAguiProject(project)) {
 			AguiProjectInfo aguiInfo = BaseProjectHelper.getAguiProjectInfo(project);
-			RBuilder rBuilder = new RBuilder(aguiInfo.packageName, aguiInfo.projectPath);
+			String aguiCorePackageName = thahn.java.agui.Main.class.getPackage().getName();
+			String aguiCorePath = AguiPrefs.getInstance().getSdkJarLocation();
+			// prepare resource container like enum resource, etc.. 
+			RMaker coreRMaker = new RMaker(true, aguiCorePackageName, aguiCorePath, aguiCorePath, aguiCorePath
+					, ResourcesManager.getInstance(), aguiCorePackageName);
+			coreRMaker.parse();
+			// make R.java
+			RBuilder rBuilder = new RBuilder(aguiCorePackageName, aguiCorePath, aguiInfo.packageName, aguiInfo.projectPath);
 			rBuilder.parse();
-			//
+			// refresh
 			IFolder genFolder = project.getFolder(AguiConstants.FD_GEN);
             genFolder.refreshLocal(IResource.DEPTH_INFINITE, new SubProgressMonitor(monitor, 10));
 		}

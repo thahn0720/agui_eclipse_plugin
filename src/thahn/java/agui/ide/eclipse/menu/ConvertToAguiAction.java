@@ -19,6 +19,7 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.actions.ActionDelegate;
 import org.eclipse.ui.internal.ObjectPluginAction;
 
+import thahn.java.agui.ide.eclipse.preferences.AguiPrefs;
 import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.utils.ToolsJarLoader;
 import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
@@ -32,7 +33,7 @@ public class ConvertToAguiAction extends ActionDelegate implements IViewActionDe
 	public void run(IAction action) {
 		StructuredSelection selection = ((StructuredSelection)((ObjectPluginAction)action).getSelection());
 		if(!selection.isEmpty()) {
-			if(AguiPlugin.getDefault().getSdkLocation() == null || AguiPlugin.getDefault().getSdkLocation().trim().equals("")) {
+			if(AguiPrefs.getInstance().getSdkLocation() == null || AguiPrefs.getInstance().getSdkLocation().trim().equals("")) {
 				MessageBoxUtils.showMessageBox("Agui", "Agui SDK Location should set");
 				AguiPlugin.getDefault().workbenchStarted();
 			} else {
@@ -43,13 +44,13 @@ public class ConvertToAguiAction extends ActionDelegate implements IViewActionDe
 						@Override
 						public void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 							try {
-								String toolsJarPath = AguiPlugin.getDefault().getLocationInSdk(AguiConstants.TOOLS_PROJECT_CONVERTER_PATH);
-								String importInfoPath = AguiPlugin.getDefault().getLocationInSdk(AguiConstants.TOOLS_IMPORT_INFO_PATH);
+								String toolsJarPath = AguiPrefs.getInstance().getLocationInSdk(AguiConstants.TOOLS_PROJECT_CONVERTER_PATH);
+								String importInfoPath = AguiPrefs.getInstance().getLocationInSdk(AguiConstants.TOOLS_IMPORT_INFO_PATH);
 								URL jarUrl = new File(toolsJarPath).toURI().toURL();
 								if(!ToolsJarLoader.getInstance().isLoaded(jarUrl)) {
 									ToolsJarLoader.getInstance().addURL(jarUrl);
 								} 
-								String sdkJarPath = AguiPlugin.getDefault().getSdkJarLocation();
+								String sdkJarPath = AguiPrefs.getInstance().getSdkJarLocation();
 								Class toAguiCls = ToolsJarLoader.getInstance().loadClass("thahn.java.agui.converter.ConverterToAgui");
 								Object obj = toAguiCls.getConstructor(String.class, String.class, String.class, String.class).newInstance(project.getName(), project.getLocationURI().getPath(), sdkJarPath, importInfoPath);
 								Method method = obj.getClass().getMethod("convert");

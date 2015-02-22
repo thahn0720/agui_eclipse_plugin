@@ -3,12 +3,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="libs/common.jar"/>
-	<classpathentry kind="lib" path="libs/sdk-common.jar"/>
-	<classpathentry kind="lib" path="libs/sdklib.jar"/>
-	<classpathentry kind="lib" path="libs/layoutlib-api.jar"/>
-	<classpathentry kind="lib" path="libs/kxml2-2.3.0.jar"/>
-	<classpathentry kind="lib" path="libs/rule-api.jar"/>
-	<classpathentry kind="lib" path="libs/agui_sdk.jar"/>
+	<classpathentry kind="lib" path="lib/ProjectConverter.jar"/>
+	<classpathentry kind="lib" path="lib/agui_sdk.jar" sourcepath="D:/Workspace/Java/AGUI/AGUI/agui_framework/agui_framework/src/main/java"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

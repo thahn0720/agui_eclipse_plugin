@@ -13,9 +13,9 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
-import thahn.java.agui.Log;
 import thahn.java.agui.res.ManifestParser;
 import thahn.java.agui.res.ManifestParser.ManifestInfo;
+import thahn.java.agui.utils.Log;
 
 public final class BaseProjectHelper {
 

@@ -1,64 +1,196 @@
 package thahn.java.agui.ide.eclipse.preferences;
 
-import org.eclipse.jface.preference.*;
-import org.eclipse.ui.IWorkbenchPreferencePage;
+import java.io.File;
+import java.nio.file.Paths;
+import java.util.List;
+
+import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
+
+import thahn.java.agui.AguiConstants;
 import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
+import thahn.java.agui.ide.eclipse.wizard.TextUtils;
+import thahn.java.agui.res.ManifestParser;
+import thahn.java.agui.res.ManifestParser.ManifestInfo;
 
-/**
- * This class represents a preference page that
- * is contributed to the Preferences dialog. By 
- * subclassing <samp>FieldEditorPreferencePage</samp>, we
- * can use the field support built into JFace that allows
- * us to create a page that is small and knows how to 
- * save, restore and apply itself.
- * <p>
- * This page is used to modify preferences only. They
- * are stored in the preference store that belongs to
- * the main plug-in class. That way, preferences can
- * be accessed directly via the preference store.
- */
+import com.google.common.collect.Lists;
 
-public class AguiPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
-	public static final String 														PAGE_ID 			= "thahn.java.agui.ide.eclipse.preferences.AguiPreferencePage";
+public class AguiPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 	
-	public AguiPreferencePage() {
-		super(GRID);
-		setPreferenceStore(AguiPlugin.getDefault().getPreferenceStore());
-		setDescription("Agui Preferences");
+	public static final String 											PAGE_ID 			= "thahn.java.agui.ide.eclipse.preferences.AguiPreferencePage";
+	
+	private Text sdkLocationText;
+	private Table sdkJarTable;
+	private List<AguiSdkInfo> sdkLists = Lists.newArrayList();
+
+	/**
+	 * Initialize the preference page.
+	 */
+	public void init(IWorkbench workbench) {
+		// Initialize the preference page
 	}
 	
 	/**
-	 * Creates the field editors. Field editors are abstractions of
-	 * the common GUI blocks needed to manipulate various types
-	 * of preferences. Each field editor knows how to save and
-	 * restore itself.
+	 * Create contents of the preference page.
+	 * @param parent
 	 */
-	public void createFieldEditors() {
-		addField(new DirectoryFieldEditor(AguiPreferenceConstants.P_SDK_LOCATION, 
-				"&SDK Location:", getFieldEditorParent()));
-//		addField(
-//			new BooleanFieldEditor(
-//				PreferenceConstants.P_BOOLEAN,
-//				"&An example of a boolean preference",
-//				getFieldEditorParent()));
-//
-//		addField(new RadioGroupFieldEditor(
-//				PreferenceConstants.P_CHOICE,
-//			"An example of a multiple-choice preference",
-//			1,
-//			new String[][] { { "&Choice 1", "choice1" }, {
-//				"C&hoice 2", "choice2" }
-//		}, getFieldEditorParent()));
-//		addField(
-//			new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
+	@Override
+	public Control createContents(Composite parent) {
+		Composite container = new Composite(parent, SWT.NULL);
+		container.setLayout(new GridLayout(3, false));
+		
+		Label lblAguiPreferences = new Label(container, SWT.NONE);
+		lblAguiPreferences.setText("Agui Preferences");
+		new Label(container, SWT.NONE);
+		new Label(container, SWT.NONE);
+		
+		Label lblAguiSdkFolder = new Label(container, SWT.NONE);
+		lblAguiSdkFolder.setAlignment(SWT.CENTER);
+		lblAguiSdkFolder.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
+		lblAguiSdkFolder.setText("SDK Location");
+		
+		sdkLocationText = new Text(container, SWT.BORDER);
+		sdkLocationText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		
+		Button btnBrowse = new Button(container, SWT.NONE);
+		btnBrowse.setText("Browse");
+		
+		Label lblSdkVersion = new Label(container, SWT.NONE);
+		lblSdkVersion.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 3, 1));
+		lblSdkVersion.setText("Choose SDK Version");
+		
+		sdkJarTable = new Table(container, SWT.BORDER | SWT.FULL_SELECTION);
+		sdkJarTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
+		sdkJarTable.setHeaderVisible(true);
+		sdkJarTable.setLinesVisible(true);
+		// selection listener
+		btnBrowse.addSelectionListener(browseSelectionListener);
+		sdkJarTable.addSelectionListener(tableSelectionListener);
+		// set default
+		sdkLocationText.setText(AguiPrefs.getInstance().getSdkLocation());
+		refreshTable();
+
+		return container;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
-	 */
-	public void init(IWorkbench workbench) {
+	private void refreshTable() {
+		// clean all
+		sdkLists.clear();
+		sdkJarTable.clearAll();
+		// insert table item
+		String[] columns = new String[]{"Target Name", "Version", "API Level"};
+		for (String columnText : columns) {
+			TableColumn column = new TableColumn(sdkJarTable, SWT.NONE);
+			column.setText(columnText);
+		}
+        // platforms path
+        File platformsFile = Paths.get(AguiPrefs.getInstance().getSdkLocation(), AguiConstants.PATH_PLATFORMS).toFile();
+        File[] lists = platformsFile.listFiles();
+        if (lists != null) {
+        	for (File item : lists) {
+        		AguiSdkInfo aguiSdkInfo = new AguiSdkInfo();
+        		String name = item.getName();
+        		File manifestBaseDir = Paths.get(platformsFile.getAbsolutePath(), name, "data").toFile();
+        		ManifestParser manifestParser = new ManifestParser(null);
+        		manifestParser.parse(manifestBaseDir.getAbsolutePath());
+        		ManifestInfo manifestInfo = manifestParser.getManifestInfo();
+        		aguiSdkInfo.sdkBasePath = manifestBaseDir.getParent(); 
+        		aguiSdkInfo.manifestInfo = manifestInfo;
+        		sdkLists.add(aguiSdkInfo);
+    			if(manifestInfo != null) {
+    				TableItem tableItem = new TableItem(sdkJarTable, SWT.NONE);
+    				tableItem.setText(new String[]{name, manifestInfo.versionName, manifestInfo.versionCode});
+    			} else {
+    				AguiPlugin.displayError("Manifest Error", "manifest parsing error");
+    			}
+			}
+        } else {
+        	AguiPlugin.displayError("No Sdk Lib", "the sdk lib does not exist for agui.");
+        }
+        
+		for (TableColumn column : sdkJarTable.getColumns()) {
+			column.pack();
+		}
+		
+		if (sdkJarTable.getSelectionIndex() == -1) {
+			String versionCode = AguiPrefs.getInstance().getSdkVersionSelection();
+			if (versionCode == null) {
+				sdkJarTable.select(0);
+				AguiPrefs.getInstance().setSdkVersionSelection(sdkLists.get(0).manifestInfo.versionCode);
+				AguiPrefs.getInstance().setSdkJarLocation(sdkLists.get(0).sdkBasePath);
+			} else {
+				for (int i = 0; i < sdkLists.size(); i++) {
+					AguiSdkInfo aguiSdkInfo = sdkLists.get(i);
+					if (versionCode.equals(aguiSdkInfo.manifestInfo.versionCode)) {
+						sdkJarTable.select(i);
+						break;
+					}
+				}
+			}
+		}
 	}
 	
+	private SelectionListener browseSelectionListener = new SelectionListener() {
+
+		@Override
+		public void widgetSelected(SelectionEvent e) {
+			DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.OPEN | SWT.SHEET);
+			if (TextUtils.isNullorEmpty(sdkLocationText.getText())) {
+				dialog.setText(sdkLocationText.getText());
+			} 
+			String path = dialog.open();
+			if (path != null) {
+				sdkLocationText.setText(path);
+				if (new File(path).exists()) {
+					AguiPrefs.getInstance().setSdkLocation(path);
+					refreshTable();
+				} else {
+					AguiPlugin.displayError("Error", "Xml format is wrong");	
+				}
+			}
+		}
+
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {
+		}
+	};
+	
+	private SelectionListener tableSelectionListener = new SelectionListener() {
+		
+		@Override
+		public void widgetSelected(SelectionEvent e) {
+			int index = sdkJarTable.getSelectionIndex();
+			if (index != -1) {
+				for (AguiSdkInfo item : sdkLists) {
+					AguiPrefs.getInstance().setSdkVersionSelection(item.manifestInfo.versionCode);
+					AguiPrefs.getInstance().setSdkJarLocation(item.sdkBasePath);
+					break;
+				}
+			}
+		}
+		
+		@Override
+		public void widgetDefaultSelected(SelectionEvent e) {
+		}
+	};
+	
+	public class AguiSdkInfo {
+		public String sdkBasePath;
+		public ManifestInfo manifestInfo; 
+	}
 }

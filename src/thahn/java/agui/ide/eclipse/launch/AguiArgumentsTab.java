@@ -29,8 +29,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 
-import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
 import thahn.java.agui.ide.eclipse.project.AguiProjectInfo;
+import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
 
 public class AguiArgumentsTab extends JavaLaunchTab {//extends JavaArgumentsTab {
 
