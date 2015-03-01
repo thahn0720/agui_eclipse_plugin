@@ -1,5 +1,11 @@
 package thahn.java.agui.ide.eclipse.build.builder;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -24,16 +30,16 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import thahn.java.agui.Global;
 import thahn.java.agui.ide.eclipse.preferences.AguiPrefs;
 import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.project.AguiProjectInfo;
 import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
 import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
+import thahn.java.agui.ide.eclipse.wizard.AguiProjectMaker;
+import thahn.java.agui.ide.eclipse.wizard.template.ResourceIndicator;
 import thahn.java.agui.res.RBuilder;
 import thahn.java.agui.res.RMaker;
 import thahn.java.agui.res.ResourcesManager;
-import thahn.java.agui.utils.MyUtils;
 
 public class ResourceBuilder extends IncrementalProjectBuilder {
 
@@ -181,8 +187,20 @@ public class ResourceBuilder extends IncrementalProjectBuilder {
 		// the visitor does the work.
 		delta.accept(new SampleDeltaVisitor());
 		final IProject project = delta.getResource().getProject();
-		if(BaseProjectHelper.isAguiProject(project)) {
+		if (BaseProjectHelper.isAguiProject(project)) {
+			// get AguiManifest info
 			AguiProjectInfo aguiInfo = BaseProjectHelper.getAguiProjectInfo(project);
+			// BuildConfig.java
+			AguiProjectMaker maker = new AguiProjectMaker(aguiInfo.projectName, aguiInfo.packageName, aguiInfo.mainActivityName);
+			try (BufferedInputStream buildConfigBis = new BufferedInputStream(maker.copyTemplate("BuildConfigTemplate.txt"))) {
+				Files.copy(buildConfigBis, Paths.get(aguiInfo.projectPath, "gen"
+						, aguiInfo.packageName.replace(".", "/"), AguiConstants.BUILD_CONFIG_JAVA)
+						, new CopyOption[] { StandardCopyOption.REPLACE_EXISTING });
+			} catch (IOException e) {
+				e.printStackTrace();
+				AguiPlugin.displayError("Build Error", e.getMessage());
+			}
+			// R.java
 			String aguiCorePackageName = thahn.java.agui.Main.class.getPackage().getName();
 			String aguiCorePath = AguiPrefs.getInstance().getSdkJarLocation();
 			// prepare resource container like enum resource, etc.. 
@@ -209,9 +227,10 @@ public class ResourceBuilder extends IncrementalProjectBuilder {
 		super.clean(monitor);
 		IProject project = getProject();
 		IFolder genFolder = project.getFolder(AguiConstants.FD_GEN);
-		if(genFolder.exists()) {
+		if (genFolder.exists()) {
 			for(IResource res : genFolder.members()) {
-				if(res.exists()) res.delete(true, new SubProgressMonitor(monitor, 10));
+				if (res.exists())
+					res.delete(true, new SubProgressMonitor(monitor, 10));
 			}
 		}
 	}

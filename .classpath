@@ -4,6 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="lib/ProjectConverter.jar"/>
-	<classpathentry kind="lib" path="lib/agui_sdk.jar" sourcepath="D:/Workspace/Java/AGUI/AGUI/agui_framework/agui_framework/src/main/java"/>
+	<classpathentry kind="lib" path="lib/agui_sdk.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

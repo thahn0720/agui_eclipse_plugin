@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Agui Eclipse Plugin
 Bundle-SymbolicName: thahn.java.agui.ide.eclipse.wizard; singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 0.0.1.qualifier
 Bundle-Activator: thahn.java.agui.ide.eclipse.wizard.AguiPlugin
 Bundle-Vendor: thahn
 Require-Bundle: org.eclipse.ui,

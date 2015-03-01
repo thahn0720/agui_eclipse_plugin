@@ -193,4 +193,18 @@
              class="thahn.java.agui.ide.eclipse.project.AguiStartup">
        </startup>
     </extension>
+    <extension
+          point="org.eclipse.ui.exportWizards">
+       <category
+             id="thahn.java.agui.ide.eclipse.category.export"
+             name="Agui">
+       </category>
+       <wizard
+             category="thahn.java.agui.ide.eclipse.category.export"
+             class="thahn.java.agui.ide.eclipse.wizard.export.AguiExportWizard"
+             icon="icons/ic_launcher_16x16.png"
+             id="thahn.java.agui.ide.eclipse.export"
+             name="Agui Export">
+       </wizard>
+    </extension>
 </plugin>

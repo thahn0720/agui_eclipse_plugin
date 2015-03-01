@@ -39,6 +39,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 
 import thahn.java.agui.ide.eclipse.preferences.AguiPreferenceConstants;
 import thahn.java.agui.ide.eclipse.preferences.AguiPrefs;
+import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.project.AguiNature;
 import thahn.java.agui.ide.eclipse.wizard.template.ResourceIndicator;
 
@@ -121,43 +122,43 @@ public class AguiProjectMaker {
 	private void createAguiProject(IJavaProject javaProject, IProgressMonitor monitor) throws CoreException, IOException {
 		IProject proj = javaProject.getProject();
 		IContainer container = (IContainer) proj;
-		//
+		// 
 		createFolder(container, "src", monitor);
 		createSrcPakcage(proj, "src/", mPackageName, mActivityName, monitor);
 		createFolder(container, "gen", monitor);
 		createSrcPakcage(proj, "gen/", mPackageName, mActivityName, monitor);
 		javaProject.setOutputLocation(createFolder(container, "bin", monitor).getFullPath(), monitor);
-		//
+		// 
 		createFolder(container, "res", monitor);
 		createFolder(container, "res/drawable", monitor);
 		createFolder(container, "res/drawable-hdpi", monitor);
 		createFolder(container, "res/layout", monitor);
 		createFolder(container, "res/values", monitor);
-		//
+		// 
 		BufferedInputStream activityBis = new BufferedInputStream(copyTemplate("ActivityTemplate.txt"));
 		addFileToProject(container, new Path("/src/"+mPackageName.replace(".", "/")+"/"+mActivityName+".java"), activityBis, monitor);
 		activityBis.close();
-		//
+		// 
 		BufferedInputStream manifestBis = new BufferedInputStream(copyTemplate("AguiManifestTemplate.xml"));//copyManifest(mPackageName, mActivityName));
 		addFileToProject(container, new Path("AguiManifest.xml"), manifestBis, monitor);
 		manifestBis.close();
-		//
+		// 
 		BufferedInputStream icBis = new BufferedInputStream(AguiPlugin.getBundleAbsolutePath("icons/ic_launcher.png").openStream());
 		addFileToProject(container, new Path("res/drawable-hdpi/ic_launcher.png"), icBis, monitor);
 		icBis.close();
-		//
+		// 
 		BufferedInputStream stringBis = new BufferedInputStream(copyTemplate("stringsTemplate.xml"));//copyValues(mApplicationName, mPackageName, mActivityName));
 		addFileToProject(container, new Path("res/values/string.xml"), stringBis, monitor);
 		stringBis.close();
-		//
+		// 
 		BufferedInputStream layoutBis = new BufferedInputStream(copyTemplate("mainTemplate.xml"));//copyFile("mainTemplate.xml"));
 		addFileToProject(container, new Path("res/layout/main.xml"), layoutBis, monitor);
 		layoutBis.close();
-		//
+		// 
 		BufferedInputStream buildConfigBis = new BufferedInputStream(copyTemplate("BuildConfigTemplate.txt"));//copyFile("mainTemplate.xml"));
-		addFileToProject(container, new Path("gen/"+mPackageName.replace(".", "/")+"/BuildConfig.java"), buildConfigBis, monitor);
+		addFileToProject(container, new Path("gen/"+mPackageName.replace(".", "/")+"/"+AguiConstants.BUILD_CONFIG_JAVA), buildConfigBis, monitor);
 		buildConfigBis.close();
-		//
+		// 
 //		proj.build(IncrementalProjectBuilder.INCREMENTAL_BUILD, null);
 	}
 	
@@ -196,7 +197,7 @@ public class AguiProjectMaker {
 	 * @param monitor
 	 * @throws CoreException
 	 */
-	private void addFileToProject(IContainer container, Path path, InputStream contentStream, IProgressMonitor monitor) throws CoreException {
+	public void addFileToProject(IContainer container, Path path, InputStream contentStream, IProgressMonitor monitor) throws CoreException {
 		final IFile file = container.getFile(path);
 
 		if (file.exists()) {
@@ -206,7 +207,7 @@ public class AguiProjectMaker {
 		}
 	}
 	
-	private InputStream copyTemplate(String template) throws CoreException {
+	public InputStream copyTemplate(String template) throws CoreException {
 		return copyTemplate(ResourceIndicator.class.getResourceAsStream(template));
 	}
 	

@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
@@ -22,12 +23,17 @@ public class AguiLaunchDelegate extends JavaLaunchDelegate { //implements ILaunc
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		String projectName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
-		StringBuilder argBuilder = new StringBuilder();//"E:\\Workspace\\runtime-EclipseApplication\\s7").append(" ").append("s7.s7");
+		StringBuilder argBuilder = new StringBuilder();
         IProject tempProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		if (BaseProjectHelper.isAguiProject(tempProject)) {
 			AguiProjectInfo info = BaseProjectHelper.getAguiProjectInfo(tempProject);
 			argBuilder.append(info.projectPath).append(" ").append(info.packageName).append(" ").append(info.mainActivityName);
-			configuration.getWorkingCopy().setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, argBuilder.toString()); 
+			String args = configuration.getWorkingCopy().getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "");
+			if (!args.equals(argBuilder.toString())) {
+				ILaunchConfigurationWorkingCopy wc = configuration.getWorkingCopy();
+				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, argBuilder.toString());
+				configuration = wc.doSave();
+			}
 		}
 		
 		super.launch(configuration, mode, launch, monitor);

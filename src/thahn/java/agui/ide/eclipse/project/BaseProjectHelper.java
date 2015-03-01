@@ -3,16 +3,19 @@ package thahn.java.agui.ide.eclipse.project;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import thahn.java.agui.Global;
 import thahn.java.agui.res.ManifestParser;
 import thahn.java.agui.res.ManifestParser.ManifestInfo;
 import thahn.java.agui.utils.Log;
@@ -107,9 +110,9 @@ public final class BaseProjectHelper {
 		if(mf == null || mf.length == 0) {
 			Log.e("ResourceBuilder", "aguimanifest.xml does not exist.");
 		} else {
-	    	ManifestParser mfParser = new ManifestParser(null);
 			String mfPath = mf[0].getRawLocationURI().getRawPath();
 			String projectPath = mfPath.substring(1, mfPath.lastIndexOf("/"));
+	    	ManifestParser mfParser = new ManifestParser(null);
 			mfParser.parse(projectPath);
 			ManifestInfo manifestInfo = mfParser.getManifestInfo();
 			if(manifestInfo != null) {
@@ -136,6 +139,32 @@ public final class BaseProjectHelper {
     public static IJavaProject getJavaProject(IProject project) throws CoreException {
         if (project != null && project.hasNature(JavaCore.NATURE_ID)) {
             return JavaCore.create(project);
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the {@link IFolder} representing the output for the project for Android specific
+     * files.
+     * <p>
+     * The project must be a java project and be opened, or the method will return null.
+     * @param project the {@link IProject}
+     * @return an IFolder item or null.
+     */
+    public final static IFolder getJavaOutputFolder(IProject project) {
+        try {
+            if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+                // get a java project from the normal project object
+                IJavaProject javaProject = JavaCore.create(project);
+
+                IPath path = javaProject.getOutputLocation();
+                path = path.removeFirstSegments(1);
+                return project.getFolder(path);
+            }
+        } catch (JavaModelException e) {
+            // Let's do nothing and return null
+        } catch (CoreException e) {
+            // Let's do nothing and return null
         }
         return null;
     }

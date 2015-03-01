@@ -1,8 +1,11 @@
 package thahn.java.agui.ide.eclipse.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -86,5 +89,59 @@ public class ProjectHelper {
             return null;
         }
         return (IFile) r;
+    }
+    
+    /**
+     * Returns if the project has error level markers.
+     * @param includeReferencedProjects flag to also test the referenced projects.
+     * @throws CoreException
+     */
+    public static boolean hasError(IProject project, boolean includeReferencedProjects)
+    throws CoreException {
+        IMarker[] markers = project.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_INFINITE);
+        if (markers != null && markers.length > 0) {
+            // the project has marker(s). even though they are "problem" we
+            // don't know their severity. so we loop on them and figure if they
+            // are warnings or errors
+            for (IMarker m : markers) {
+                int s = m.getAttribute(IMarker.SEVERITY, -1);
+                if (s == IMarker.SEVERITY_ERROR) {
+                    return true;
+                }
+            }
+        }
+
+        // test the referenced projects if needed.
+        if (includeReferencedProjects) {
+            List<IProject> projects = getReferencedProjects(project);
+
+            for (IProject p : projects) {
+                if (hasError(p, false)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+    
+    /**
+     * Returns the list of referenced project that are opened and Java projects.
+     * @param project
+     * @return a new list object containing the opened referenced java project.
+     * @throws CoreException
+     */
+    public static List<IProject> getReferencedProjects(IProject project) throws CoreException {
+        IProject[] projects = project.getReferencedProjects();
+
+        ArrayList<IProject> list = new ArrayList<IProject>();
+
+        for (IProject p : projects) {
+            if (p.isOpen() && p.hasNature(JavaCore.NATURE_ID)) {
+                list.add(p);
+            }
+        }
+
+        return list;
     }
 }

@@ -6,6 +6,8 @@ import java.util.List;
 
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -28,15 +30,18 @@ import thahn.java.agui.ide.eclipse.wizard.TextUtils;
 import thahn.java.agui.res.ManifestParser;
 import thahn.java.agui.res.ManifestParser.ManifestInfo;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 public class AguiPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+	public AguiPreferencePage() {
+	}
 	
-	public static final String 											PAGE_ID 			= "thahn.java.agui.ide.eclipse.preferences.AguiPreferencePage";
+	public static final String 									PAGE_ID 			= "thahn.java.agui.ide.eclipse.preferences.AguiPreferencePage";
 	
-	private Text sdkLocationText;
-	private Table sdkJarTable;
-	private List<AguiSdkInfo> sdkLists = Lists.newArrayList();
+	private Text 												sdkLocationText;
+	private Table 												sdkJarTable;
+	private List<AguiSdkInfo> 									sdkLists = Lists.newArrayList();
 
 	/**
 	 * Initialize the preference page.
@@ -81,25 +86,43 @@ public class AguiPreferencePage extends PreferencePage implements IWorkbenchPref
 		// selection listener
 		btnBrowse.addSelectionListener(browseSelectionListener);
 		sdkJarTable.addSelectionListener(tableSelectionListener);
+		sdkLocationText.addKeyListener(sdkLocationkeyListener);
 		// set default
-		sdkLocationText.setText(AguiPrefs.getInstance().getSdkLocation());
-		refreshTable();
+		String sdkLocation = AguiPrefs.getInstance().getSdkLocation();
+		if (!Strings.isNullOrEmpty(sdkLocation)) {
+			sdkLocationText.setText(sdkLocation);
+		}
+		// init table 
+		initTable();
 
 		return container;
 	}
-
-	private void refreshTable() {
-		// clean all
-		sdkLists.clear();
-		sdkJarTable.clearAll();
+	
+	private void initTable() {
 		// insert table item
 		String[] columns = new String[]{"Target Name", "Version", "API Level"};
 		for (String columnText : columns) {
 			TableColumn column = new TableColumn(sdkJarTable, SWT.NONE);
 			column.setText(columnText);
 		}
+		// refresh table
+		refreshTable();
+		// pack column
+		for (TableColumn column : sdkJarTable.getColumns()) {
+			column.pack();
+		}
+	}
+
+	private void refreshTable() {
+		// clean all
+		cleanTable();
         // platforms path
-        File platformsFile = Paths.get(AguiPrefs.getInstance().getSdkLocation(), AguiConstants.PATH_PLATFORMS).toFile();
+		String sdkLocation = AguiPrefs.getInstance().getSdkLocation();
+		if (Strings.isNullOrEmpty(sdkLocation)) {
+			return ;  
+		}
+		// refresh table
+        File platformsFile = Paths.get(sdkLocation, AguiConstants.PATH_PLATFORMS).toFile();
         File[] lists = platformsFile.listFiles();
         if (lists != null) {
         	for (File item : lists) {
@@ -123,10 +146,6 @@ public class AguiPreferencePage extends PreferencePage implements IWorkbenchPref
         	AguiPlugin.displayError("No Sdk Lib", "the sdk lib does not exist for agui.");
         }
         
-		for (TableColumn column : sdkJarTable.getColumns()) {
-			column.pack();
-		}
-		
 		if (sdkJarTable.getSelectionIndex() == -1) {
 			String versionCode = AguiPrefs.getInstance().getSdkVersionSelection();
 			if (versionCode == null) {
@@ -145,6 +164,16 @@ public class AguiPreferencePage extends PreferencePage implements IWorkbenchPref
 		}
 	}
 	
+	private void cleanTable() {
+		sdkLists.clear();
+		sdkJarTable.removeAll();
+	}
+	
+	private void setSdkLocation(String text) {
+		AguiPrefs.getInstance().setSdkLocation(text);
+		refreshTable();
+	}
+	
 	private SelectionListener browseSelectionListener = new SelectionListener() {
 
 		@Override
@@ -157,11 +186,13 @@ public class AguiPreferencePage extends PreferencePage implements IWorkbenchPref
 			if (path != null) {
 				sdkLocationText.setText(path);
 				if (new File(path).exists()) {
-					AguiPrefs.getInstance().setSdkLocation(path);
-					refreshTable();
+					setSdkLocation(path);
 				} else {
+					cleanTable();
 					AguiPlugin.displayError("Error", "Xml format is wrong");	
 				}
+			} else {
+				cleanTable();
 			}
 		}
 
@@ -189,6 +220,38 @@ public class AguiPreferencePage extends PreferencePage implements IWorkbenchPref
 		}
 	};
 	
+	private KeyListener sdkLocationkeyListener = new KeyListener() {
+		
+		@Override
+		public void keyReleased(KeyEvent e) {
+			String text = sdkLocationText.getText();
+			if (!Strings.isNullOrEmpty(text) && new File(text).exists()) {
+				setSdkLocation(text);
+			} else {
+				cleanTable();
+				AguiPlugin.displayError("Invalid", "Invalid path");
+			}
+		}
+		
+		@Override
+		public void keyPressed(KeyEvent e) {
+			
+		}
+	};
+	
+	@Override
+	protected void performApply() {
+		super.performApply();
+	}
+
+	@Override
+	public boolean performOk() {
+		return super.performOk();
+//		AguiPrefs.getInstance().setSdkLocation(text);
+//		AguiPrefs.getInstance().setSdkJarLocation(item.sdkBasePath);
+//		AguiPrefs.getInstance().setSdkVersionSelection(item.manifestInfo.versionCode);
+	}
+
 	public class AguiSdkInfo {
 		public String sdkBasePath;
 		public ManifestInfo manifestInfo; 
