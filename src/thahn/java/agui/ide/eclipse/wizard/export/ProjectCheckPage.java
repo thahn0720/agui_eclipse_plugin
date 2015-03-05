@@ -17,14 +17,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.project.AguiNature;
 import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
 import thahn.java.agui.ide.eclipse.project.IconFactory;
 import thahn.java.agui.ide.eclipse.project.ProjectChooserHelper;
 import thahn.java.agui.ide.eclipse.project.ProjectChooserHelper.NonLibraryProjectOnlyFilter;
 import thahn.java.agui.ide.eclipse.wizard.ProjectHelper;
-import thahn.java.agui.ide.eclipse.wizard.export.AguiExportWizard.ExportWizardPage;
+
+import com.google.common.base.Strings;
 
 /**
  * First Export Wizard Page. Display warning/errors.
@@ -34,6 +34,7 @@ final class ProjectCheckPage extends ExportWizardPage {
     private final static String IMG_WARNING = "warning.png"; //$NON-NLS-1$
 
     private final AguiExportWizard mWizard;
+    private IJavaProject mJavaProject;
     private Image mError;
     private Image mWarning;
     private boolean mHasMessage = false;
@@ -43,9 +44,10 @@ final class ProjectCheckPage extends ExportWizardPage {
     private ProjectChooserHelper mProjectChooserHelper;
     private boolean mFirstOnShow = true;
 
-    protected ProjectCheckPage(AguiExportWizard wizard, String pageName) {
+    protected ProjectCheckPage(AguiExportWizard wizard, IJavaProject jproject, String pageName) {
         super(pageName);
         mWizard = wizard;
+        mJavaProject = jproject;
 
         setTitle("Project Checks");
         setDescription("Performs a set of checks to make sure the application can be exported.");
@@ -104,15 +106,18 @@ final class ProjectCheckPage extends ExportWizardPage {
         });
 
         setControl(mTopComposite);
+        if (mJavaProject != null) {
+        	mProjectText.setText(mJavaProject.getProject().getName());
+        }
     }
 
     @Override
     void onShow() {
         if (mFirstOnShow) {
             // get the project and init the ui
-            IProject project = mWizard.getProject();
+            IJavaProject project = mWizard.getJProject();
             if (project != null) {
-                mProjectText.setText(project.getName());
+                mProjectText.setText(project.getProject().getName());
             }
 
             mFirstOnShow = false;
@@ -225,7 +230,7 @@ final class ProjectCheckPage extends ExportWizardPage {
 
         mHasMessage = true;
     }
-
+    
     /**
      * Checks the parameters for correctness, and update the error message and buttons.
      */
@@ -238,7 +243,7 @@ final class ProjectCheckPage extends ExportWizardPage {
         }
 
         // update the wizard with the new project
-        mWizard.setProject(null);
+//        mWizard.setJProject(null);
 
         //test the project name first!
         String text = mProjectText.getText().trim();
@@ -248,27 +253,31 @@ final class ProjectCheckPage extends ExportWizardPage {
             setErrorMessage("Project name contains unsupported characters!");
         } else {
             IJavaProject[] projects = mProjectChooserHelper.getAguiProjects(null);
-            IProject found = null;
+            IJavaProject found = null;
             for (IJavaProject javaProject : projects) {
                 if (javaProject.getProject().getName().equals(text)) {
-                    found = javaProject.getProject();
+                    found = javaProject;
                     break;
                 }
-
             }
 
             if (found != null) {
                 setErrorMessage(null);
 
                 // update the wizard with the new project
-                mWizard.setProject(found);
+                mWizard.setJProject(found);
 
                 // now rebuild the error ui.
-                buildErrorUi(found);
+                buildErrorUi(found.getProject());
             } else {
                 setErrorMessage(String.format("There is no android project named '%1$s'",
                         text));
             }
         }
     }
+
+	@Override
+	public boolean canFlipToNextPage() {
+		return !Strings.isNullOrEmpty(mProjectText.getText());
+	}
 }

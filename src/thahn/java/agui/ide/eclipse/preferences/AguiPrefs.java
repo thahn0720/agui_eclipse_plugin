@@ -7,6 +7,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.google.common.base.Strings;
 
+import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
 
 /**
@@ -53,7 +54,7 @@ public class AguiPrefs extends AbstractPreferenceInitializer {
 	public String getSdkJarLocation() {
 		String ret = prefs().getString(AguiPreferenceConstants.P_SDK_LIB_LOCATION);
 		if(ret != null || !Strings.isNullOrEmpty(ret)) {
-			ret = Paths.get(ret, "agui_sdk.jar").toFile().getAbsolutePath();
+			ret = Paths.get(ret, AguiConstants.AGUI_SDK_JAR).toFile().getAbsolutePath();
 		}
 		return ret;
 	}

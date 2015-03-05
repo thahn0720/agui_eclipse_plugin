@@ -135,11 +135,15 @@ public class AguiPreferencePage extends PreferencePage implements IWorkbenchPref
         		aguiSdkInfo.sdkBasePath = manifestBaseDir.getParent(); 
         		aguiSdkInfo.manifestInfo = manifestInfo;
         		sdkLists.add(aguiSdkInfo);
-    			if(manifestInfo != null) {
+    			if (manifestInfo != null) {
     				TableItem tableItem = new TableItem(sdkJarTable, SWT.NONE);
     				tableItem.setText(new String[]{name, manifestInfo.versionName, manifestInfo.versionCode});
     			} else {
     				AguiPlugin.displayError("Manifest Error", "manifest parsing error");
+    			}
+    			
+    			if (!Paths.get(aguiSdkInfo.sdkBasePath, thahn.java.agui.ide.eclipse.project.AguiConstants.AGUI_SDK_JAR).toFile().exists()) {
+    				AguiPlugin.displayError("agui_sdk.jar", "agui_sdk.jar not exists in " + aguiSdkInfo.sdkBasePath);
     			}
 			}
         } else {

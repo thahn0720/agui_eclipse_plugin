@@ -1,0 +1,29 @@
+One-JAR Overview
+----------------
+One-JAR allows you to package a Java application inside a single 
+Jar file, while preserving any supporting library Jar files intact, 
+under a "lib" directory.  Preserving library Jar files may avoid 
+violating the license terms for redistribution of those Jar files. 
+
+Use of One-JAR should be transparent to your application, unless it uses
+a non-delegating classloader in which case you will need to implement
+a One-JAR classloader wrapper.  For more information please visit
+http://one-jar.sourceforge.net (below).
+    
+Make sure to include both class and resourc files in your One-JAR file.
+
+Option          Type       	 Purpose 
+-------------------------------------------------------------------------------
+One-JAR         Checkbox     Builds a One-JAR archive, an executable JAR file 
+                             with supporting libraries under lib, and the main 
+                             archive under main/main.jar 
+					
+                             Run the archive in the same way as a FatJar archive: 
+                             java -jar archive.jar
+
+One-Jar-Expand  String       A list of files/directories from the One-JAR archive 
+                             to be expanded into the filesystem when the One-JAR 
+                             archive is executed.   This is useful if your
+                             application relies on having certain files present
+                             in the file-system, rather than loading them as
+                             resources.

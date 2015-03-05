@@ -1,161 +1,233 @@
+/*******************************************************************************
+ * Copyright (c) 2004 Ferenc Hechler - ferenc_hechler@users.sourceforge.net
+ * 
+ * This file is part of the Fat Jar Eclipse Plug-In
+ *
+ * The Fat Jar Eclipse Plug-In is free software;
+ * you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your option) any later version.
+ * 
+ * The Fat Jar Eclipse Plug-In is distributed
+ * in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with the Fat Jar Eclipse Plug-In;
+ * if not, write to the Free Software Foundation, Inc.,
+ * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  
+ *******************************************************************************/
 package thahn.java.agui.ide.eclipse.wizard.export;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Properties;
+
+import net.sf.fjep.fatjar.popup.actions.BuildFatJar;
+import net.sf.fjep.fatjar.wizard.FJExportWizardConfigPage;
+import net.sf.fjep.fatjar.wizard.FJExportWizardFilesSelectPage;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.internal.core.JavaProject;
+import org.eclipse.jdt.internal.core.PackageFragmentRoot;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.window.Window;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.jface.wizard.WizardPage;
-import org.eclipse.swt.events.VerifyEvent;
-import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 
+import thahn.java.agui.exception.WrongFormatException;
+import thahn.java.agui.ide.eclipse.project.BaseProjectHelper;
+import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
+
 public class AguiExportWizard extends Wizard implements IExportWizard {
 
-	private ExportWizardPage mPages[] = new ExportWizardPage[1];
-	private IProject mProject;
-	
-	/**
-     * Base page class for the ExportWizard page. This class add the {@link #onShow()} callback.
-     */
-    static abstract class ExportWizardPage extends WizardPage {
+	private FJExportWizardConfigPage		fjewConfig;
+	private ProjectCheckPage				projectCheckPage;
+	private FJExportWizardFilesSelectPage	fjewFiles;
+	// FJExportWizardAutoJarPage 			fjewAutoJar;
+	private IJavaProject					jproject	= null;
 
-        /** bit mask constant for project data change event */
-        protected static final int DATA_PROJECT = 0x001;
-        /** bit mask constant for keystore data change event */
-        protected static final int DATA_KEYSTORE = 0x002;
-        /** bit mask constant for key data change event */
-        protected static final int DATA_KEY = 0x004;
-
-        protected static final VerifyListener sPasswordVerifier = new VerifyListener() {
-            @Override
-            public void verifyText(VerifyEvent e) {
-                // verify the characters are valid for password.
-                int len = e.text.length();
-
-                // first limit to 127 characters max
-                if (len + ((Text)e.getSource()).getText().length() > 127) {
-                    e.doit = false;
-                    return;
-                }
-
-                // now only take non control characters
-                for (int i = 0 ; i < len ; i++) {
-                    if (e.text.charAt(i) < 32) {
-                        e.doit = false;
-                        return;
-                    }
-                }
-            }
-        };
-
-        /**
-         * Bit mask indicating what changed while the page was hidden.
-         * @see #DATA_PROJECT
-         * @see #DATA_KEYSTORE
-         * @see #DATA_KEY
-         */
-        protected int mProjectDataChanged = 0;
-
-        ExportWizardPage(String name) {
-            super(name);
-        }
-
-        abstract void onShow();
-
-        @Override
-        public void setVisible(boolean visible) {
-            super.setVisible(visible);
-            if (visible) {
-                onShow();
-                mProjectDataChanged = 0;
-            }
-        }
-
-        final void projectDataChanged(int changeMask) {
-            mProjectDataChanged |= changeMask;
-        }
-
-        /**
-         * Calls {@link #setErrorMessage(String)} and {@link #setPageComplete(boolean)} based on a
-         * {@link Throwable} object.
-         */
-        protected void onException(Throwable t) {
-            String message = getExceptionMessage(t);
-
-            setErrorMessage(message);
-            setPageComplete(false);
-        }
-    }
-
-	
-	@Override
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
-        // get the project from the selection
-        Object selected = selection.getFirstElement();
-
-        if (selected instanceof IProject) {
-            mProject = (IProject)selected;
-        } else if (selected instanceof IAdaptable) {
-            IResource r = (IResource)((IAdaptable)selected).getAdapter(IResource.class);
-            if (r != null) {
-                mProject = r.getProject();
-            }
-        }
+	public AguiExportWizard() {
+		super();
 	}
 
-	@Override
-    public void addPages() {
-        addPage(mPages[0] = new ProjectCheckPage(this, "Export"));
-//        addPage(mKeystoreSelectionPage = mPages[1] = new KeystoreSelectionPage(this, PAGE_KEYSTORE_SELECTION));
-//        addPage(mKeyCreationPage = mPages[2] = new KeyCreationPage(this, PAGE_KEY_CREATION));
-//        addPage(mKeySelectionPage = mPages[3] = new KeySelectionPage(this, PAGE_KEY_SELECTION));
-//        addPage(mKeyCheckPage = mPages[4] = new KeyCheckPage(this, PAGE_KEY_CHECK));
-    }
+	public AguiExportWizard(IJavaProject jproject) {
+		this.jproject = jproject;
+		if (jproject != null)
+			setJProject(jproject);
+	}
 	
-	@Override
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.wizard.IWizard#addPages()
+	 */
+	public void addPages() {
+		projectCheckPage = new ProjectCheckPage(this, jproject, "Choose Project");
+		addPage(projectCheckPage);
+		fjewConfig = new FJExportWizardConfigPage(null, null);
+		addPage(fjewConfig);
+		fjewFiles = new FJExportWizardFilesSelectPage(this);
+		// addPage(fjewFiles);
+		// fjewAutoJar = new FJExportWizardAutoJarPage(this);
+		// addPage(fjewAutoJar);
+		super.addPages();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.wizard.IWizard#performFinish()
+	 */
 	public boolean performFinish() {
-		
-		return false;
+		try {
+			if (jproject == null) {
+				jproject = getJProject();// fjewProject.getSelectedJavaProject();
+			}
+			if (jproject != null) {
+				Properties props = fjewConfig.updateProperties();
+
+				String[][] excludeInfo = fjewFiles.getAllUnchecked();
+				HashSet excludes = new HashSet();
+				StringBuffer excludeProp = new StringBuffer();
+				for (int i = 0; i < excludeInfo.length; i++) {
+					excludes.add(excludeInfo[i][1]);
+					if (i > 0)
+						excludeProp.append(';');
+					excludeProp.append(excludeInfo[i][0]);
+				}
+				props.setProperty("excludes", excludeProp.toString());
+
+				String[][] includeInfo = fjewFiles.getAllChecked();
+				ArrayList includes = new ArrayList();
+				StringBuffer includeProp = new StringBuffer();
+				for (int i = 0; i < includeInfo.length; i++) {
+					includes.add(includeInfo[i][1]);
+					if (i > 0)
+						includeProp.append(';');
+					includeProp.append(includeInfo[i][0]);
+				}
+				props.setProperty("includes", includeProp.toString());
+
+				BuildFatJar bfj = new BuildFatJar();
+				bfj.runBuildConfiguredFatJar(jproject, props, excludes, includes);
+			}
+			return (jproject != null);
+		} catch (Exception x) {
+			// Debugging...
+			x.printStackTrace();
+			// Convert to unchecked so we can throw it out of this scope.
+			throw new Error(x);
+		}
 	}
-	
-	IProject getProject() {
-        return mProject;
-    }
-	
-    void setProject(IProject project) {
-        mProject = project;
 
-        updatePageOnChange(ExportWizardPage.DATA_PROJECT);
-    }
-    
-    void updatePageOnChange(int changeMask) {
-        for (ExportWizardPage page : mPages) {
-            page.projectDataChanged(changeMask);
-        }
-    }
-	
-	/**
-     * Returns the {@link Throwable#getMessage()}. If the {@link Throwable#getMessage()} returns
-     * <code>null</code>, the method is called again on the cause of the Throwable object.
-     * <p/>If no Throwable in the chain has a valid message, the canonical name of the first
-     * exception is returned.
-     */
-    static String getExceptionMessage(Throwable t) {
-        String message = t.getMessage();
-        if (message == null) {
-            // no error info? get the stack call to display it
-            // At least that'll give us a better bug report.
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.printStackTrace(new PrintStream(baos));
-            message = baos.toString();
-        }
+	public Properties getProperties() {
+		Properties result = null;
+		try {
+			if (jproject == null) {
+				jproject = getJProject();// fjewProject.getSelectedJavaProject();
+			}
+			if (jproject != null) {
+				Properties props = fjewConfig.updateProperties();
 
-        return message;
-    }
+				String[][] excludeInfo = fjewFiles.getAllUnchecked();
+				StringBuffer excludeProp = new StringBuffer();
+				for (int i = 0; i < excludeInfo.length; i++) {
+					if (i > 0)
+						excludeProp.append(';');
+					excludeProp.append(excludeInfo[i][0]);
+				}
+				props.setProperty("excludes", excludeProp.toString());
+
+				String[][] includeInfo = fjewFiles.getAllChecked();
+				StringBuffer includeProp = new StringBuffer();
+				for (int i = 0; i < includeInfo.length; i++) {
+					if (i > 0)
+						includeProp.append(';');
+					includeProp.append(includeInfo[i][0]);
+				}
+				props.setProperty("includes", includeProp.toString());
+				result = props;
+			}
+		} catch (Exception x) {
+			// Debugging...
+			x.printStackTrace();
+			// Convert to unchecked so we can throw it out of this scope.
+			throw new Error(x);
+		}
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.ui.IWorkbenchWizard#init(org.eclipse.ui.IWorkbench,
+	 * org.eclipse.jface.viewers.IStructuredSelection)
+	 */
+	@SuppressWarnings("restriction")
+	public void init(IWorkbench workbench, IStructuredSelection selection) {
+		Object[] jprojects = selection.toArray();
+		if (jprojects.length == 1) {
+			String selectedJavaProjects = null;
+			if (jprojects[0] instanceof JavaProject) {
+				JavaProject javaProject = (JavaProject) jprojects[0];
+				if (BaseProjectHelper.isAguiProject(javaProject.getProject())) {
+					selectedJavaProjects = ((JavaProject) jprojects[0]).getProject().getName();
+					jproject = ((JavaProject) jprojects[0]);
+				} else {
+					AguiPlugin.displayError("Error", "Select Agui project.");
+				}
+			} else if (jprojects[0] instanceof PackageFragmentRoot) {
+				IJavaProject javaProject = ((PackageFragmentRoot) jprojects[0]).getJavaProject();
+				if (BaseProjectHelper.isAguiProject(javaProject.getProject())) {
+					selectedJavaProjects = javaProject.getProject().getName();
+					jproject = ((PackageFragmentRoot) jprojects[0]).getJavaProject();
+				} else {
+					AguiPlugin.displayError("Error", "Select Agui project.");
+				}
+			}
+		} else {
+			AguiPlugin.displayError("Error", "Select a one project.");
+		}
+	}
+
+	public boolean execute(Shell shell) {
+		setNeedsProgressMonitor(true);
+		WizardDialog dialog = new WizardDialog(shell, this);
+		// dialog.setMinimumPageSize(640,400);
+		return (dialog.open() == Window.OK);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.eclipse.jface.wizard.IWizard#getStartingPage()
+	 */
+	public IWizardPage getStartingPage() {
+		if (jproject != null)
+			setJProject(jproject);
+		return super.getStartingPage();
+	}
+
+	public IJavaProject getJProject() {
+		return this.jproject;
+	}
+
+	public void setJProject(IJavaProject jproject) {
+		this.jproject = jproject;
+		Properties props = BuildFatJar.getFatJarProperties(jproject);
+		fjewFiles.setJProject(jproject, props);
+		fjewConfig.setJProject(jproject, props);
+	}
+
+	public FJExportWizardConfigPage getFjewConfig() {
+		return fjewConfig;
+	}
 }

@@ -1,8 +1,16 @@
 package thahn.java.agui.ide.eclipse.wizard;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
+import net.sf.fjep.fatjar.popup.actions.BuildFatJar;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -35,6 +43,11 @@ public class AguiPlugin extends AbstractUIPlugin {
 	 * The constructor
 	 */
 	public AguiPlugin() {
+		try {
+			resourceBundle = ResourceBundle.getBundle("net.sf.fjep.fatjar.FatjarPluginResources");
+		} catch (MissingResourceException x) {
+			resourceBundle = null;
+		}
 	}
 
 	/*
@@ -191,5 +204,69 @@ public class AguiPlugin extends AbstractUIPlugin {
 	public static void displayError(String title, String message) {
 		MessageDialog dialog = new MessageDialog(getShell(), title, null,
 			    message, MessageDialog.ERROR, new String[] { "Ok", "Cancel" }, 0);
+		dialog.open();
 	}
+	
+	//**********************************************
+	// fat jar
+	//**********************************************
+	// The name of the One-JAR distribution being used.
+    public static final String ONE_JAR_BOOT = "one-jar-boot-0.95.jar";
+
+	//Resource bundle.
+	private ResourceBundle resourceBundle;
+
+    // Property names in .fatjar file for each project.
+    public final static String ONEJAR = "onejar";
+
+    public final static String ONEJAR_CHECKBOX = ONEJAR + ".checkbox";
+
+    public final static String ONEJAR_EXPAND = ONEJAR + ".expand";
+
+    public final static String ONEJAR_LICENSE_REQUIRED = ONEJAR + ".license.required";
+	
+	/**
+	 * Returns the string from the plugin's resource bundle,
+	 * or 'key' if not found.
+	 */
+	public static String getResourceString(String key) {
+		ResourceBundle bundle = getDefault().getResourceBundle();
+		try {
+			return (bundle != null) ? bundle.getString(key) : key;
+		} catch (MissingResourceException e) {
+			return key;
+		}
+	}
+
+	/**
+	 * Returns the plugin's resource bundle,
+	 */
+	public ResourceBundle getResourceBundle() {
+		return resourceBundle;
+	}
+    
+    /**
+     * 
+     * @param wr
+     * @param eFile
+     * @param showWarning
+     * @return null if no checkout request was needed (file does not exist or is writable),
+     * if checkout was asked, status represents the resul (isOK())
+     */
+    public static IStatus askFileWriteAccess(IFile eFile) {
+        
+        IStatus result = null;
+        if (eFile != null) {
+            File f = eFile.getFullPath().toFile();
+            if (!f.canWrite()) {
+            	if (BuildFatJar.getScmAutoCheckout()) {
+	                IFile[] editFiles = new IFile[1];
+	                editFiles[0] = eFile;
+	                Shell shell = new Shell();
+	                result = ResourcesPlugin.getWorkspace().validateEdit(editFiles, shell);
+	            }
+	        }
+    	}
+        return result;
+    }
 }
