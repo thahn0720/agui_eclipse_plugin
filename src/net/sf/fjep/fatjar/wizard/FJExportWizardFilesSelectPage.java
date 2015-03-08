@@ -77,7 +77,6 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.views.navigator.ResourceComparator;
 import org.osgi.framework.Bundle;
 
-import thahn.java.agui.ide.eclipse.project.AguiConstants;
 import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
 import thahn.java.agui.ide.eclipse.wizard.export.AguiExportWizard;
 
@@ -841,8 +840,12 @@ public class FJExportWizardFilesSelectPage extends WizardPage {
 		for (int i = 0; i < children.length; i++) {
 			if (children[i].isType(FJTree.NT_ADD_DIR)) {
 				recursiveGetAllChecked(children[i], result, children[i].getAbsPath());
-			} else if (children[i].isType(FJTree.NT_FILE)) {
+			} else if (children[i].isType(FJTree.NT_FILE) && children[i].getCheckState() == FJTree.CS_CHECKED) {
+				// for agui
 				String absPath = children[i].getAbsPath();
+				if (absPath.endsWith(".jar")) {
+					continue;
+				}
 				int index = absPath.lastIndexOf(File.separatorChar);
 				String[] display_abspath = new String[] { children[i].getDisplayPath(),
 						absPath.substring(0, index) + "|" + absPath.substring(index + 1) };

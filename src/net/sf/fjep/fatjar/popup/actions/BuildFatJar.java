@@ -735,14 +735,14 @@ public class BuildFatJar implements IObjectActionDelegate {
         }
 
         for (int i = 0; i < jarFiles.size(); i++) {
+        	int checkd = FJTree.CS_CHECKED;
             String jarFile = (String) jarFiles.get(i);
             if (jarFile.endsWith(AguiConstants.AGUI_SDK_JAR)) {
-            	continue;
+            	checkd = FJTree.CS_UNCHECKED;
             }
             String jarname = File.separatorChar + jarFile;
             jarname = jarname.substring(jarname.lastIndexOf(File.separatorChar) + 1);
-            rootNode.addChild(FJTree.NT_JAR, jarname, new File(jarFile),
-                    FJTree.CS_CHECKED);
+            rootNode.addChild(FJTree.NT_JAR, jarname, new File(jarFile), checkd);
         }
         // include AguiManifest.xml
         String aguiManifestPath = BaseProjectHelper.getManifest(jproject.getProject()).getRawLocation().toFile().getAbsolutePath();

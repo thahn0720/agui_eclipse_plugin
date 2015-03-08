@@ -86,6 +86,8 @@ import thahn.java.agui.ide.eclipse.wizard.AguiPlugin;
 
 public class FJExportWizardConfigPage extends WizardPage {
 
+	public static final String		AGUI_EXTENSION = ".agui";
+	
 	private IJavaProject	jproject;
 	private Properties		props;
 
@@ -521,6 +523,9 @@ public class FJExportWizardConfigPage extends WizardPage {
 		oneJarLicenseRequired = props.getProperty(AguiPlugin.ONEJAR_LICENSE_REQUIRED, "true").equalsIgnoreCase("true");
 
 		if (justCreated) {
+			if (jarname.endsWith(AGUI_EXTENSION)) {
+				jarname = jarname.substring(0, jarname.length() - AGUI_EXTENSION.length());
+			}
 			jarnameText.setText(jarname);
 			manifestfileText.setText(manifest_file);
 			// manifestmainclassText.setText(manifest_mainclass);
@@ -686,10 +691,10 @@ public class FJExportWizardConfigPage extends WizardPage {
 				updateStatus("Jar File must be specified", null);
 				return;
 			}
-			if (!jarname.toLowerCase().endsWith(".jar")) {
-				updateStatus(null, "Jar File extension should be \"jar\"");
-				return;
-			}
+			// if (!jarname.toLowerCase().endsWith(".jar")) {
+			// 	updateStatus(null, "Jar File extension should be \"jar\"");
+			// 	return;
+			// }
 			updateStatus(null, null);
 		}
 	}
@@ -739,6 +744,9 @@ public class FJExportWizardConfigPage extends WizardPage {
 	 */
 	public Properties updateProperties() {
 		String jarname = getJarname();
+		if (!jarname.endsWith(AGUI_EXTENSION)) {
+			jarname += AGUI_EXTENSION;
+		}
 		String manifest_file = getManifestfile();
 		String manifest_mainclass = getManifestmainclass();
 		String manifest_classpath = getManifestclasspath();
