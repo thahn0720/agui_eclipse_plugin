@@ -74,8 +74,10 @@ public class AguiExportWizard extends Wizard implements IExportWizard {
 		addPage(projectCheckPage);
 		fjewConfig = new FJExportWizardConfigPage(null, null);
 		addPage(fjewConfig);
-		fjewFiles = new FJExportWizardFilesSelectPage(this);
-		addPage(fjewFiles);
+		// when release, comment
+		// fjewFiles = new FJExportWizardFilesSelectPage(this);
+		// addPage(fjewFiles);
+		//
 		// fjewAutoJar = new FJExportWizardAutoJarPage(this);
 		// addPage(fjewAutoJar);
 		super.addPages();

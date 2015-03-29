@@ -1,5 +1,6 @@
 package thahn.java.agui.ide.eclipse.project;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.eclipse.core.resources.IFile;
@@ -15,6 +16,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
+import thahn.java.agui.BuildTool;
 import thahn.java.agui.Global;
 import thahn.java.agui.res.ManifestParser;
 import thahn.java.agui.res.ManifestParser.ManifestInfo;
@@ -95,12 +97,23 @@ public final class BaseProjectHelper {
     }
     
     public static IFile getManifest(IProject project) {
-        IResource r = project.findMember("/"+ "AguiManifest.xml");
-
+        IResource r = project.findMember("/"+ AguiConstants.AGUI_MANIFEST);
         if (r == null || r.exists() == false || (r instanceof IFile) == false) {
             return null;
         }
+        
         return (IFile) r;
+    }
+    
+    public static IFolder getResFolder(IProject project) {
+    	for (BuildTool buildTool : BuildTool.values()) {
+    		IResource r = project.findMember(Paths.get(buildTool.getResPath(), AguiConstants.FD_RES).toString());
+    		if (r != null && r instanceof IFolder) {
+    			return (IFolder) r;
+    		}
+		}
+    	
+		return null;
     }
     
     public static AguiProjectInfo getAguiProjectInfo(IProject project) {

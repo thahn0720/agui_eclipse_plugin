@@ -173,8 +173,7 @@ public class FJExportWizardFilesSelectPage extends WizardPage {
 					dialogTreeExpanded(event);
 				}
 			});
-			//
-			//
+			
 			Button addDir = new Button(comp, SWT.PUSH);
 			addDir.setText("Add Dir...");
 			addDir.addSelectionListener(new SelectionAdapter() {
@@ -838,7 +837,9 @@ public class FJExportWizardFilesSelectPage extends WizardPage {
 		Vector result = new Vector();
 		FJTree[] children = rootTree.getReadChildren();
 		for (int i = 0; i < children.length; i++) {
-			if (children[i].isType(FJTree.NT_ADD_DIR)) {
+			if (children[i].isType(FJTree.NT_DIR) && children[i].isAguiResource()) {
+				recursiveGetAllDirChecked(children[i], result, children[i].getAbsPath());
+			} else if (children[i].isType(FJTree.NT_ADD_DIR) || children[i].isType(FJTree.NT_DIR)) {
 				recursiveGetAllChecked(children[i], result, children[i].getAbsPath());
 			} else if (children[i].isType(FJTree.NT_FILE) && children[i].getCheckState() == FJTree.CS_CHECKED) {
 				// for agui
@@ -855,8 +856,7 @@ public class FJExportWizardFilesSelectPage extends WizardPage {
 		return (String[][]) result.toArray(new String[result.size()][]);
 	}
 
-	private void recursiveGetAllChecked(FJTree node, Vector checked,
-			String rootAbsPath) {
+	private void recursiveGetAllChecked(FJTree node, Vector checked, String rootAbsPath) {
 		if (node.getCheckState() == FJTree.CS_CHECKED) {
 			String[] display_abspath;
 			int len = rootAbsPath.length() + 1;
@@ -876,6 +876,21 @@ public class FJExportWizardFilesSelectPage extends WizardPage {
 		}
 	}
 
+	private void recursiveGetAllDirChecked(FJTree node, Vector checked, String rootAbsPath) {
+		if (node.getCheckState() == FJTree.CS_CHECKED) {
+			String[] display_abspath;
+			File file = new File(rootAbsPath);
+			String parentPath = file.getParent();
+			String name = file.getName();
+			display_abspath = new String[] { node.getDisplayPath(), parentPath + "|" + name };
+			checked.add(display_abspath);
+		} else if (node.getCheckState() != FJTree.CS_UNCHECKED) {
+			FJTree[] children = node.getReadChildren();
+			for (int i = 0; i < children.length; i++)
+				recursiveGetAllDirChecked(children[i], checked, rootAbsPath);
+		}
+	}
+	
 	public class SourceInfo {
 		public boolean isJar;
 		public String absPath;

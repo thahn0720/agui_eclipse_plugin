@@ -13,5 +13,6 @@ public class AguiConstants {
 
 	public static final String	FD_GEN							= "gen";
 	public static final String	FD_SRC							= "src";
+	public static final String	FD_RES							= "res";
 	public static final String	F_R								= "R.java";
 }

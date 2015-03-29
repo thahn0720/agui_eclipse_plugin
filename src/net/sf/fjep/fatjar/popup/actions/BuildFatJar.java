@@ -747,6 +747,9 @@ public class BuildFatJar implements IObjectActionDelegate {
         // include AguiManifest.xml
         String aguiManifestPath = BaseProjectHelper.getManifest(jproject.getProject()).getRawLocation().toFile().getAbsolutePath();
         rootNode.addChild(FJTree.NT_FILE, AguiConstants.AGUI_MANIFEST, new File(aguiManifestPath), FJTree.CS_CHECKED);
+        // res
+        String aguiResPath = BaseProjectHelper.getResFolder(jproject.getProject()).getRawLocation().toFile().getAbsolutePath();
+        rootNode.addChild(FJTree.NT_DIR, AguiConstants.FD_RES, new File(aguiResPath), FJTree.CS_CHECKED);
         
         return rootNode;
     }

@@ -173,4 +173,8 @@ public class FJTree {
 			result = parent.getDisplayPath() + "~" + displayName;
 		return result;
 	}
+	
+	public boolean isAguiResource() {
+		return "res".equals(displayName);
+	}
 }
